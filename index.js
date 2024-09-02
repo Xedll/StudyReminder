@@ -13,7 +13,7 @@ bot.on("polling_error", (err) => {
 	console.error(err.message)
 })
 let commands = ["Добавить напоминание", "Выполнить или изменить напоминание"]
-let tasks = JSON.parse(fs.readFileSync(__dirname + "../data/tasks.json")) || []
+let tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 let pool = {}
 let LevelsOfTimer = {
 	0: [2 * 3600 * 1000, "2 часа"], //2 часа
@@ -28,7 +28,7 @@ let LevelsOfTimer = {
 
 setInterval(async () => {
 	let timeNow = new Date().getTime()
-	tasks = JSON.parse(fs.readFileSync(__dirname + "../data/tasks.json")) || []
+	tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 	for (let item of tasks) {
 		if (timeNow - item.creationTime > LevelsOfTimer[item.timerLevel][0]) {
 			await bot.sendMessage(item.creator, `Напоминание: ${item.title}. Прошедшее время: ~${LevelsOfTimer[item.timerLevel][1]}`, {
@@ -57,7 +57,7 @@ bot.onText(/Добавить напоминание/, async (message) => {
 	}
 })
 bot.onText(/Выполнить или изменить напоминание/, async (message) => {
-	tasks = JSON.parse(fs.readFileSync(__dirname + "../data/tasks.json")) || []
+	tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 	let chatID = message.chat.id
 	await bot.sendMessage(chatID, "Пожалуйста, выберите напоминание из списка.", {
 		reply_markup: {
@@ -108,11 +108,11 @@ bot.on("message", async (message) => {
 	if (pool[chatID].target == "addRemindersTitle") {
 		let remindersTitle = message.text
 		tasks.push({ title: remindersTitle, status: "active", timerLevel: 0, creator: chatID, creationTime: new Date().getTime() })
-		fs.writeFileSync(__dirname + "../data/tasks.json", JSON.stringify(tasks))
+		fs.writeFileSync(path.join(__dirname, "../data/tasks.json"), JSON.stringify(tasks))
 		pool[chatID].target = null
 	}
 	if (pool[chatID].target == "editTitle") {
-		tasks = JSON.parse(fs.readFileSync(__dirname + "../data/tasks.json")) || []
+		tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 		let item = null
 		for (let task of tasks) {
 			if (task.creationTime === pool[chatID].data.data) {
@@ -124,12 +124,12 @@ bot.on("message", async (message) => {
 		}
 		let newTitle = message.text
 		item.title = newTitle
-		fs.writeFileSync(__dirname + "../data/tasks.json", JSON.stringify(tasks))
+		fs.writeFileSync(path.join(__dirname, "../data/tasks.json"), JSON.stringify(tasks))
 		pool[chatID].target = null
 		await bot.sendMessage(chatID, "Напоминание успешно изменилось.")
 	}
 	if (pool[chatID].target == "editTimer") {
-		tasks = JSON.parse(fs.readFileSync(__dirname + "../data/tasks.json")) || []
+		tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 		let item = null
 		for (let task of tasks) {
 			console.log(task.creationTime, pool[chatID])
@@ -146,7 +146,7 @@ bot.on("message", async (message) => {
 		}
 		item.timerLevel = newTimer
 		item.creationTime = new Date().getTime()
-		fs.writeFileSync(__dirname + "../data/tasks.json", JSON.stringify(tasks))
+		fs.writeFileSync(path.join(__dirname, "../data/tasks.json"), JSON.stringify(tasks))
 		await bot.sendMessage(chatID, "Дедлайн успешно обновился и таймер обнулился.")
 		pool[chatID].target = null
 	}
@@ -154,7 +154,7 @@ bot.on("message", async (message) => {
 bot.on("callback_query", async (message) => {
 	let chatID = message.message.chat.id
 	let data = JSON.parse(message.data)
-	tasks = JSON.parse(fs.readFileSync(__dirname + "../data/tasks.json")) || []
+	tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 
 	if (data.target == "complete") {
 		let item = null
@@ -170,7 +170,7 @@ bot.on("callback_query", async (message) => {
 		item.status = "active"
 		item.timerLevel + 1 > 7 ? 7 : item.timerLevel++
 		item.creationTime = new Date().getTime()
-		fs.writeFileSync(__dirname + "../data/tasks.json", JSON.stringify(tasks))
+		fs.writeFileSync(path.join(__dirname, "../data/tasks.json"), JSON.stringify(tasks))
 
 		await bot.sendMessage(chatID, "Напоминание успешно выполнилось, таймер обновился.")
 		bot.answerCallbackQuery(message.id)
@@ -242,7 +242,7 @@ bot.on("callback_query", async (message) => {
 			return await bot.sendMessage(chatID, "Что-то пошло не так. Попробуйте снова.")
 		}
 		tasks.splice(itemIndex, 1)
-		fs.writeFileSync(__dirname + "../data/tasks.json", JSON.stringify(tasks))
+		fs.writeFileSync(path.join(__dirname, "../data/tasks.json"), JSON.stringify(tasks))
 		bot.answerCallbackQuery(message.id)
 		await bot.sendMessage(chatID, "Напоминание успешно удалилось.")
 	}
