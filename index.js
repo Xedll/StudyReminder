@@ -60,6 +60,7 @@ bot.onText(/Добавить напоминание/, async (message) => {
 bot.onText(/Выполнить или изменить напоминание/, async (message) => {
 	tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 	let chatID = message.chat.id
+	if (tasks.length === 0) return await bot.sendMessage("Напоминаний нет.")
 	await bot.sendMessage(chatID, "Пожалуйста, выберите напоминание из списка.", {
 		reply_markup: {
 			keyboard: [["Добавить напоминание"], ["Выполнить или изменить напоминание"]],
@@ -86,7 +87,7 @@ bot.onText(/Выполнить или изменить напоминание/, 
 			}
 		)
 	}
-	await bot.sendMessage(chatID, "Напоминания с активным таймером, ожидающие своего времени.")
+	if (activeTasks.length > 0) await bot.sendMessage(chatID, "Напоминания с активным таймером, ожидающие своего времени.")
 	for (let item of activeTasks) {
 		await bot.sendMessage(
 			chatID,
@@ -111,6 +112,7 @@ bot.on("message", async (message) => {
 		tasks.push({ title: remindersTitle, status: "active", timerLevel: 0, creator: chatID, creationTime: new Date().getTime() })
 		fs.writeFileSync(path.join(__dirname, "../data/tasks.json"), JSON.stringify(tasks))
 		pool[chatID].target = null
+		await bot.sendMessage(chatID, "Напоминание успешно добавлено.")
 	}
 	if (pool[chatID].target == "editTitle") {
 		tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
