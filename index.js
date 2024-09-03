@@ -30,7 +30,7 @@ setInterval(async () => {
 	let timeNow = new Date().getTime()
 	tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 	for (let item of tasks) {
-		if (timeNow - item.creationTime > LevelsOfTimer[item.timerLevel][0]) {
+		if (timeNow - item.creationTime > LevelsOfTimer[item.timerLevel][0] && item.status == "active") {
 			await bot.sendMessage(item.creator, `Напоминание: ${item.title}. Прошедшее время: ~${LevelsOfTimer[item.timerLevel][1]}`, {
 				reply_markup: {
 					keyboard: [["Добавить напоминание"], ["Выполнить или изменить напоминание"]],
