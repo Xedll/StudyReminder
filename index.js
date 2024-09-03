@@ -37,6 +37,7 @@ setInterval(async () => {
 				},
 			})
 			item.status = "waiting"
+			fs.writeFileSync(path.join(__dirname, "../data/tasks.json"), JSON.stringify(tasks))
 		}
 	}
 }, 600_000)
@@ -237,7 +238,7 @@ bot.on("callback_query", async (message) => {
 				itemIndex = i
 			}
 		}
-		if (!itemIndex) {
+		if (itemIndex === null) {
 			bot.answerCallbackQuery(message.id)
 			return await bot.sendMessage(chatID, "Что-то пошло не так. Попробуйте снова.")
 		}
