@@ -42,6 +42,14 @@ setInterval(async () => {
 	}
 }, 600_000)
 bot.onText(/Добавить напоминание/, async (message) => {
+	if (pool[chatID]) {
+		pool[chatID].target = null
+	} else {
+		pool[chatID] = {
+			target: null,
+			creator: chatID,
+		}
+	}
 	let chatID = message.chat.id
 	await bot.sendMessage(chatID, "Пожалуйста, введите название для напоминания.", {
 		reply_markup: {
@@ -58,6 +66,14 @@ bot.onText(/Добавить напоминание/, async (message) => {
 	}
 })
 bot.onText(/Выполнить или изменить напоминание/, async (message) => {
+	if (pool[chatID]) {
+		pool[chatID].target = null
+	} else {
+		pool[chatID] = {
+			target: null,
+			creator: chatID,
+		}
+	}
 	tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
 	let chatID = message.chat.id
 	if (tasks.length === 0) return await bot.sendMessage("Напоминаний нет.")
@@ -69,6 +85,7 @@ bot.onText(/Выполнить или изменить напоминание/, 
 	let waitingTasks = []
 	let activeTasks = []
 	for (let item of tasks) {
+		if (item.creator != chatID) continue
 		if (item.status == "active") activeTasks.push(item)
 		if (item.status == "waiting") waitingTasks.push(item)
 	}
