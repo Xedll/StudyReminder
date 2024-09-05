@@ -33,7 +33,7 @@ setInterval(async () => {
 		if (timeNow - item.creationTime > LevelsOfTimer[item.timerLevel][0] && item.status == "active") {
 			await bot.sendMessage(item.creator, `Напоминание: ${item.title}. Прошедшее время: ~${LevelsOfTimer[item.timerLevel][1]}`, {
 				reply_markup: {
-					keyboard: [["Добавить напоминание"], ["Выполнить или изменить напоминание"]],
+					keyboard: [["Добавить напоминание"], ["Выполнить или изменить напоминание"], ["Назад"]],
 				},
 			})
 			item.status = "waiting"
@@ -42,6 +42,7 @@ setInterval(async () => {
 	}
 }, 600_000)
 bot.onText(/Добавить напоминание/, async (message) => {
+	let chatID = message.chat.id
 	if (pool[chatID]) {
 		pool[chatID].target = null
 	} else {
@@ -50,10 +51,9 @@ bot.onText(/Добавить напоминание/, async (message) => {
 			creator: chatID,
 		}
 	}
-	let chatID = message.chat.id
 	await bot.sendMessage(chatID, "Пожалуйста, введите название для напоминания.", {
 		reply_markup: {
-			keyboard: [["Добавить напоминание"], ["Выполнить или изменить напоминание"]],
+			keyboard: [["Добавить напоминание"], ["Выполнить или изменить напоминание"], ["Назад"]],
 		},
 	})
 	if (pool[chatID]) {
@@ -66,6 +66,7 @@ bot.onText(/Добавить напоминание/, async (message) => {
 	}
 })
 bot.onText(/Выполнить или изменить напоминание/, async (message) => {
+	let chatID = message.chat.id
 	if (pool[chatID]) {
 		pool[chatID].target = null
 	} else {
@@ -75,11 +76,10 @@ bot.onText(/Выполнить или изменить напоминание/, 
 		}
 	}
 	tasks = JSON.parse(fs.readFileSync(path.join(__dirname, "../data/tasks.json"))) || []
-	let chatID = message.chat.id
 	if (tasks.length === 0) return await bot.sendMessage("Напоминаний нет.")
 	await bot.sendMessage(chatID, "Пожалуйста, выберите напоминание из списка.", {
 		reply_markup: {
-			keyboard: [["Добавить напоминание"], ["Выполнить или изменить напоминание"]],
+			keyboard: [["Добавить напоминание"], ["Выполнить или изменить напоминание"], ["Назад"]],
 		},
 	})
 	let waitingTasks = []
@@ -118,6 +118,17 @@ bot.onText(/Выполнить или изменить напоминание/, 
 				},
 			}
 		)
+	}
+})
+bot.onText(/Назад/, async (message) => {
+	let chatID = message.chat.id
+	if (pool[chatID]) {
+		pool[chatID].target = null
+	} else {
+		pool[chatID] = {
+			target: null,
+			creator: chatID,
+		}
 	}
 })
 bot.on("message", async (message) => {
